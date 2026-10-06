@@ -158,6 +158,8 @@ h2.view-title{font-family:'Playfair Display',Georgia,serif;font-size:20px;margin
     <div class="site-header-name">Camberwell Fields</div>
   </div>
   <div class="site-header-actions">
+    <button class="btn btn-dark" id="btn-backup" title="Download all your data as a backup file">⬇ Backup</button>
+    <label class="btn btn-dark" id="btn-restore-label" title="Restore from a backup file" style="cursor:pointer">⬆ Restore<input type="file" id="btn-restore" accept=".json" style="display:none"></label>
     <button class="btn btn-dark" id="btn-add-corr">+ Add correspondence</button>
     <button class="btn btn-green" id="btn-add-proj">+ New project</button>
   </div>
@@ -806,6 +808,35 @@ async function doExportSummary(pid){
   } catch { notify("Summary failed — please try again","error"); }
   finally { exportLoading=null; render(); }
 }
+
+// ── Backup / Restore ──────────────────────────────────────────────────────────
+document.getElementById("btn-backup").onclick=()=>{
+  const data=JSON.stringify({version:1,exported:new Date().toISOString(),projects},null,2);
+  const blob=new Blob([data],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`camberwell-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
+  notify("Backup downloaded");
+};
+document.getElementById("btn-restore").onchange=e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      const imported=d.projects||d;
+      if(!Array.isArray(imported)||!imported.length)throw new Error("No projects found");
+      if(!confirm(`Import ${imported.length} project(s)? This will REPLACE your current data.`))return;
+      projects=imported; save(); view="list"; render();
+      notify(`Restored ${imported.length} project(s)`);
+    } catch(err){ notify("Restore failed — invalid backup file","error"); }
+    e.target.value="";
+  };
+  reader.readAsText(file);
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 load();
