@@ -1,0 +1,813 @@
+<title>Camberwell Fields Tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #f5f2ed; --surface: #ffffff; --surface2: #faf8f4;
+  --border: #e2dcd4; --border2: #ecdcd4;
+  --fg: #1a1a18; --fg2: #4a4a44; --fg3: #8a8a84;
+  --hbg: #1c3a2e; --hfg: #e8e0d0; --hsub: #7aaa90;
+  --accent: #2d5c44; --al: #e8f4ed; --ab: #a8d5b5;
+  --sc-bg:#fdf0ee;--sc-fg:#b03020; --m-bg:#fef5ec;--m-fg:#c04800;
+  --e-bg:#f5eef8;--e-fg:#7e34ad; --g-bg:#eafaf1;--g-fg:#1e9050;
+  --dnhg:#e04040; --dres:#f09020; --dok:#1e9050; --danger:#c0392b;
+  --sh:0 1px 4px rgba(0,0,0,.06); --shh:0 4px 14px rgba(0,0,0,.11);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#141410;--surface:#1e1e1a;--surface2:#252520;
+  --border:#333330;--border2:#3a342c;
+  --fg:#e8e4dc;--fg2:#b0ac9e;--fg3:#6a6660;
+  --hbg:#0e2018;--hfg:#d8d0bc;--hsub:#5a9070;
+  --accent:#5aaa7a;--al:#152820;--ab:#2a5c3c;
+  --sc-bg:#2a1410;--sc-fg:#f07060;--m-bg:#281810;--m-fg:#f09050;
+  --e-bg:#1e1430;--e-fg:#c090f0;--g-bg:#101e14;--g-fg:#60d090;
+  --dnhg:#f05050;--dres:#f0a030;--dok:#40c060;--danger:#e05040;
+  --sh:0 1px 4px rgba(0,0,0,.3);--shh:0 4px 14px rgba(0,0,0,.45);
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141410;--surface:#1e1e1a;--surface2:#252520;
+  --border:#333330;--border2:#3a342c;
+  --fg:#e8e4dc;--fg2:#b0ac9e;--fg3:#6a6660;
+  --hbg:#0e2018;--hfg:#d8d0bc;--hsub:#5a9070;
+  --accent:#5aaa7a;--al:#152820;--ab:#2a5c3c;
+  --sc-bg:#2a1410;--sc-fg:#f07060;--m-bg:#281810;--m-fg:#f09050;
+  --e-bg:#1e1430;--e-fg:#c090f0;--g-bg:#101e14;--g-fg:#60d090;
+  --dnhg:#f05050;--dres:#f0a030;--dok:#40c060;--danger:#e05040;
+  --sh:0 1px 4px rgba(0,0,0,.3);--shh:0 4px 14px rgba(0,0,0,.45);
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;padding:0 0 48px;background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5}
+.site-header{background:var(--hbg);color:var(--hfg);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.site-header-eyebrow{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--hsub);margin-bottom:2px}
+.site-header-name{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:700}
+.site-header-actions{display:flex;gap:8px;flex-shrink:0}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:6px;padding:9px 16px;cursor:pointer;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:.2px;transition:opacity .15s}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn:not(:disabled):hover{opacity:.85}
+.btn-dark{background:#2d5c44;color:#e8f4ed}
+.btn-green{background:var(--hsub);color:var(--hbg)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--border);color:var(--fg2)}
+.btn-danger{background:none;border:1px solid var(--danger);color:var(--danger)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icon{background:none;border:1px solid var(--border);color:var(--fg2);border-radius:5px;padding:4px 10px;cursor:pointer;font-size:11px;font-family:'Inter',sans-serif;transition:border-color .15s,color .15s}
+.btn-icon:hover{border-color:var(--ab);color:var(--accent)}
+#notif{display:none;padding:10px 24px;font-size:13px;font-weight:500}
+#notif.success{background:var(--dok);color:#fff;display:block}
+#notif.error{background:var(--danger);color:#fff;display:block}
+.content{max-width:860px;margin:0 auto;padding:28px 24px 0}
+.filters{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;align-items:center}
+.fsel{border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12px;font-family:'Inter',sans-serif;background:var(--surface);color:var(--fg);cursor:pointer;outline:none}
+.filter-count{margin-left:auto;font-size:12px;color:var(--fg3)}
+.project-list{display:flex;flex-direction:column;gap:10px}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;box-shadow:var(--sh);transition:box-shadow .15s}
+.pcard:hover{box-shadow:var(--shh)}
+.pcard-body{flex:1;min-width:0}
+.ptitle{font-size:15px;font-weight:600;margin-bottom:8px;font-family:'Playfair Display',Georgia,serif}
+.pmeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cat-badge{border-radius:4px;padding:2px 9px;font-size:11px;font-weight:600;border:1px solid transparent}
+.sdot{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--fg2)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
+.pcount{font-size:11px;color:var(--fg3);white-space:nowrap;padding-top:2px}
+.platest{margin-top:7px;display:flex;align-items:baseline;gap:6px}
+.platest-date{font-size:11px;color:var(--fg3);white-space:nowrap}
+.platest-text{font-size:13px;color:var(--fg2);line-height:1.4}
+input,textarea,select{width:100%;border:1px solid var(--border);border-radius:6px;padding:9px 11px;font-family:'Inter',sans-serif;font-size:14px;background:var(--surface2);color:var(--fg);outline:none;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--ab)}
+.flabel{display:block;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--fg3);margin-bottom:5px;font-weight:600}
+.back-btn{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:0;margin-bottom:18px;font-family:'Inter',sans-serif;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{text-decoration:underline}
+.pdetail{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px}
+.dheader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.dtitle{font-family:'Playfair Display',Georgia,serif;font-size:19px;font-weight:700;border:none;background:transparent;padding:0;flex:1;min-width:0;color:var(--fg);outline:none;border-bottom:1px solid transparent;width:auto}
+.dtitle:focus{border-bottom-color:var(--ab)}
+.dactions{display:flex;gap:7px;flex-wrap:wrap}
+.dmeta{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.dmfield{display:flex;flex-direction:column;gap:5px}
+.dmsel{width:auto;font-size:12px;padding:5px 8px}
+.fgroup{margin-bottom:15px}
+.frow{display:flex;gap:14px}
+.frow .fgroup{flex:1}
+.log-hdr{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--fg3);font-weight:600;margin-bottom:12px}
+.log-entry{border-left:3px solid var(--accent);padding-left:15px;margin-bottom:22px}
+.le-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.le-date{font-size:11px;color:var(--fg3)}
+.le-files{font-size:11px;color:var(--hsub);margin-left:8px}
+.le-text{font-size:14px;line-height:1.5;margin-bottom:7px}
+.le-summary{font-size:13px;color:var(--fg2);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:8px 12px;margin-bottom:9px}
+.le-ft{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;max-height:250px;overflow-y:auto;margin-bottom:9px}
+.le-ft pre{margin:0;font-size:12px;line-height:1.7;white-space:pre-wrap;font-family:'Inter',monospace;color:var(--fg2)}
+.le-qa{margin-top:9px}
+.le-qa-row{display:flex;gap:8px}
+.le-qa-row input{flex:1;font-size:13px;padding:7px 10px}
+.le-answer{margin-top:8px;background:var(--al);border:1px solid var(--ab);border-radius:6px;padding:10px 13px;font-size:13px;line-height:1.6}
+.confirm-del{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:var(--danger)}
+.add-corr-desc{color:var(--fg2);font-size:14px;margin-bottom:22px;line-height:1.6;margin-top:6px}
+.drop-zone{border:2px dashed var(--ab);border-radius:8px;padding:26px 20px;text-align:center;cursor:pointer;background:var(--surface2);margin-bottom:12px;transition:border-color .15s,background .15s}
+.drop-zone.drag-over{border-color:var(--accent);background:var(--al)}
+.dz-icon{font-size:26px;margin-bottom:7px}
+.dz-label{font-size:13px;font-weight:600;color:var(--fg2)}
+.dz-hint{font-size:11px;color:var(--fg3);margin-top:3px}
+.fchips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px}
+.fchip{display:flex;align-items:center;gap:6px;background:var(--al);border:1px solid var(--ab);border-radius:20px;padding:3px 11px;font-size:12px}
+.fchip-name{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fchip-rm{background:none;border:none;cursor:pointer;color:var(--fg3);font-size:14px;padding:0;line-height:1}
+.or-div{display:flex;align-items:center;gap:10px;margin:12px 0}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border)}
+.or-div span{font-size:10px;color:var(--fg3);text-transform:uppercase;letter-spacing:1px}
+.ai-box{background:var(--al);border:1px solid var(--ab);border-radius:8px;padding:20px;margin-top:4px}
+.ai-hdr{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.ai-summary{font-size:14px;line-height:1.65;margin-bottom:14px}
+.ai-note{display:inline-block;background:var(--surface);border:1px solid var(--ab);border-radius:5px;padding:5px 11px;font-size:12px;color:var(--accent);margin-bottom:14px}
+.ai-override{background:var(--surface);border:1px solid var(--border2);border-radius:6px;padding:13px 15px;margin-bottom:14px}
+.ai-override-hint{font-size:12px;color:var(--fg2);margin-bottom:9px}
+.ai-override-btns{display:flex;gap:8px;margin-bottom:9px}
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.ai-grid-item-label{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--fg3);margin-bottom:3px}
+.ai-grid-item-val{font-weight:600;font-size:13px}
+.ai-grid-item-sub{font-size:12px;color:var(--fg2);margin-top:2px}
+.ai-actions{display:flex;gap:9px}
+.add-pcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:26px;max-width:580px}
+.form-actions{display:flex;gap:9px;margin-top:22px}
+.empty{text-align:center;color:var(--fg3);padding:60px 20px;font-size:15px}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.exp-modal{background:var(--surface);border-radius:10px;width:100%;max-width:660px;max-height:82vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.exp-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.exp-title{font-size:13px;font-weight:600;color:var(--accent)}
+.exp-close{background:none;border:none;cursor:pointer;font-size:20px;color:var(--fg3);line-height:1;padding:0}
+#exp-ta{flex:1;padding:16px 18px;font-family:'Inter',monospace;font-size:12px;line-height:1.7;border:none;outline:none;resize:none;color:var(--fg);background:var(--surface2);border-radius:0 0 10px 10px}
+.exp-foot{padding:9px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--fg3)}
+#apimodal{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+.api-box{background:var(--surface);border-radius:10px;padding:28px;max-width:480px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.api-title{font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;margin-bottom:10px}
+.api-desc{font-size:13px;color:var(--fg2);line-height:1.6;margin-bottom:18px}
+[hidden]{display:none!important}
+h2.view-title{font-family:'Playfair Display',Georgia,serif;font-size:20px;margin:0 0 6px}
+@media(max-width:520px){
+  .site-header{padding:16px}
+  .content{padding:20px 16px 0}
+  .ai-grid{grid-template-columns:1fr}
+  .frow{flex-direction:column}
+}
+</style>
+
+<header class="site-header">
+  <div>
+    <div class="site-header-eyebrow">Estate Management</div>
+    <div class="site-header-name">Camberwell Fields</div>
+  </div>
+  <div class="site-header-actions">
+    <button class="btn btn-dark" id="btn-add-corr">+ Add correspondence</button>
+    <button class="btn btn-green" id="btn-add-proj">+ New project</button>
+  </div>
+</header>
+
+<div id="notif"></div>
+
+<!-- Export overlay -->
+<div id="overlay" hidden>
+  <div class="exp-modal">
+    <div class="exp-hdr">
+      <div class="exp-title" id="exp-title"></div>
+      <button class="exp-close" id="exp-close">×</button>
+    </div>
+    <textarea id="exp-ta" readonly></textarea>
+    <div class="exp-foot">Click inside the text, then Ctrl+A / Cmd+A to select all, then Ctrl+C / Cmd+C to copy.</div>
+  </div>
+</div>
+
+<!-- API key modal -->
+<div id="apimodal" hidden>
+  <div class="api-box">
+    <div class="api-title">Enter your Anthropic API key</div>
+    <p class="api-desc">The tracker uses Claude to analyse correspondence. Your key is stored in this browser session only and sent nowhere except Anthropic's API.</p>
+    <div class="fgroup">
+      <label class="flabel">Anthropic API key</label>
+      <input type="password" id="api-input" placeholder="sk-ant-…" />
+    </div>
+    <div style="display:flex;gap:9px;margin-top:16px">
+      <button class="btn btn-primary" id="api-save">Save &amp; continue</button>
+    </div>
+    <p style="font-size:11px;color:var(--fg3);margin-top:14px;line-height:1.5">
+      Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noreferrer" style="color:var(--accent)">console.anthropic.com</a>.
+    </p>
+    <button class="btn btn-ghost btn-sm" id="api-skip" style="margin-top:8px">Skip — use manually</button>
+  </div>
+</div>
+
+<div class="content" id="app"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const CATS = [
+  {id:"service-charge",label:"Service Charge Disputes",fg:"var(--sc-fg)",bg:"var(--sc-bg)"},
+  {id:"maintenance",label:"Maintenance, Repairs & Defects",fg:"var(--m-fg)",bg:"var(--m-bg)"},
+  {id:"ews1",label:"EWS1",fg:"var(--e-fg)",bg:"var(--e-bg)"},
+  {id:"general",label:"General",fg:"var(--g-fg)",bg:"var(--g-bg)"},
+];
+const STATS = [
+  {id:"waiting-nhg",label:"Waiting for NHG response",dot:"var(--dnhg)"},
+  {id:"waiting-resident",label:"Waiting for resident response",dot:"var(--dres)"},
+  {id:"resolved",label:"Resolved",dot:"var(--dok)"},
+];
+const getCat = id => CATS.find(c=>c.id===id)||CATS[3];
+const getSt  = id => STATS.find(s=>s.id===id)||STATS[0];
+const SK = "cf-projects-v3";
+let projects = [];
+let apiKey = null;
+let notifTimer = null;
+
+function genId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+function load(){
+  try{ const r=localStorage.getItem(SK); if(r){const d=JSON.parse(r);if(d&&d.length)projects=d;} }catch{}
+  try{ const k=sessionStorage.getItem("cf-key"); if(k){apiKey=k;} else{ showApiModal(); } }catch{ showApiModal(); }
+}
+function save(){ try{localStorage.setItem(SK,JSON.stringify(projects));}catch{} }
+
+// ── Notify ────────────────────────────────────────────────────────────────────
+function notify(msg,type="success"){
+  const el=document.getElementById("notif");
+  el.className=type; el.textContent=msg;
+  if(notifTimer)clearTimeout(notifTimer);
+  notifTimer=setTimeout(()=>{el.className="";el.textContent="";},3500);
+}
+
+// ── API modal ─────────────────────────────────────────────────────────────────
+function showApiModal(){
+  document.getElementById("apimodal").hidden=false;
+  document.getElementById("api-input").focus();
+}
+document.getElementById("api-save").onclick=()=>{
+  const k=document.getElementById("api-input").value.trim();
+  if(!k)return;
+  apiKey=k;
+  try{sessionStorage.setItem("cf-key",k);}catch{}
+  document.getElementById("apimodal").hidden=true;
+};
+document.getElementById("api-skip").onclick=()=>{
+  document.getElementById("apimodal").hidden=true;
+};
+document.getElementById("api-input").addEventListener("keydown",e=>{
+  if(e.key==="Enter")document.getElementById("api-save").click();
+});
+
+// ── Export overlay ────────────────────────────────────────────────────────────
+document.getElementById("exp-close").onclick=()=>{ document.getElementById("overlay").hidden=true; };
+document.getElementById("overlay").addEventListener("click",e=>{
+  if(e.target===e.currentTarget) document.getElementById("overlay").hidden=true;
+});
+function showExport(title,text){
+  document.getElementById("exp-title").textContent=title;
+  const ta=document.getElementById("exp-ta");
+  ta.value=text;
+  document.getElementById("overlay").hidden=false;
+  setTimeout(()=>ta.focus(),50);
+}
+document.getElementById("exp-ta").addEventListener("focus",e=>e.target.select());
+
+// ── Claude API ────────────────────────────────────────────────────────────────
+async function callClaude(system,userContent,maxTokens=1000){
+  if(!apiKey)throw new Error("No API key");
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:maxTokens,system,messages:[{role:"user",content:userContent}]})
+  });
+  const d=await res.json();
+  if(d.error)throw new Error(d.error.message||"API error");
+  return d.content?.find(b=>b.type==="text")?.text||"";
+}
+
+function fileToBase64(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result.split(",")[1]);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+// ── Build text export ─────────────────────────────────────────────────────────
+function buildFullText(p){
+  const cat=getCat(p.category),st=getSt(p.status);
+  const L=[];
+  L.push("CAMBERWELL FIELDS — PROJECT EXPORT");
+  L.push("=".repeat(50));
+  L.push(`Title:    ${p.title}`);
+  L.push(`Category: ${cat.label}`);
+  L.push(`Status:   ${st.label}`);
+  L.push(`Created:  ${(p.createdAt||"").slice(0,10)}`);
+  L.push(`Exported: ${new Date().toISOString().slice(0,10)}`);
+  L.push("");
+  if(p.notes){L.push("NOTES");L.push("-".repeat(30));L.push(p.notes);L.push("");}
+  L.push("CORRESPONDENCE LOG");
+  L.push("-".repeat(30));
+  if(!p.correspondence?.length){L.push("No correspondence logged.");}
+  else{
+    p.correspondence.forEach((c,i)=>{
+      L.push(`[${i+1}] ${c.date}${c.fileNames?.length?" — "+c.fileNames.join(", "):""}`);
+      L.push(`Log entry: ${c.text}`);
+      if(c.summary&&c.summary!==c.text){L.push("");L.push(`Summary: ${c.summary}`);}
+      if(c.fullText){L.push("");L.push("Full document text:");L.push(c.fullText);}
+      L.push("");
+    });
+  }
+  return L.join("\n");
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let view="list";          // list | project | add | paste
+let activeId=null;
+let filterCat="all";
+let filterStatus="all";
+let uploadedFiles=[];
+let pasteText="";
+let aiLoading=false;
+let aiResult=null;
+let userOverride=null;
+let exportLoading=null;
+let entryUI={};           // {[entryId]:{expanded,question,asking,answer,confirmDelete}}
+let newProj={title:"",category:"general",status:"waiting-nhg",notes:""};
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById("app");
+  if(view==="list")       app.innerHTML=renderList();
+  else if(view==="project")app.innerHTML=renderProject();
+  else if(view==="add")   app.innerHTML=renderAdd();
+  else if(view==="paste") app.innerHTML=renderPaste();
+  bindEvents();
+}
+
+function catBadge(id){
+  const c=getCat(id);
+  return `<span class="cat-badge" style="background:${c.bg};color:${c.fg};border-color:${c.fg}40">${c.label}</span>`;
+}
+function stBadge(id){
+  const s=getSt(id);
+  return `<span class="sdot"><span class="dot" style="background:${s.dot}"></span>${s.label}</span>`;
+}
+function catOptions(val){
+  return CATS.map(c=>`<option value="${c.id}"${c.id===val?" selected":""}>${c.label}</option>`).join("");
+}
+function stOptions(val){
+  return STATS.map(s=>`<option value="${s.id}"${s.id===val?" selected":""}>${s.label}</option>`).join("");
+}
+function projOptions(val){
+  return projects.map(p=>`<option value="${p.id}"${p.id===val?" selected":""}>${esc(p.title)}</option>`).join("");
+}
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function renderList(){
+  const filtered=projects.filter(p=>{
+    if(filterCat!=="all"&&p.category!==filterCat)return false;
+    if(filterStatus!=="all"&&p.status!==filterStatus)return false;
+    return true;
+  });
+  const cards=filtered.length===0
+    ?`<div class="empty">No projects yet. Add one above.</div>`
+    :filtered.map(p=>{
+      const latest=p.correspondence?.length?p.correspondence[p.correspondence.length-1]:null;
+      let latestHtml="";
+      if(latest){
+        latestHtml=`<div class="platest"><span class="platest-date">${latest.date}</span><span class="platest-text">${esc(latest.text.slice(0,110))}${latest.text.length>110?"…":""}</span></div>`;
+      } else if(p.notes){
+        latestHtml=`<div class="platest"><span class="platest-text" style="font-style:italic;color:var(--fg3)">${esc(p.notes.slice(0,110))}${p.notes.length>110?"…":""}</span></div>`;
+      }
+      const cnt=p.correspondence?.length||0;
+      return `<div class="pcard" data-pid="${p.id}">
+        <div class="pcard-body">
+          <div class="ptitle">${esc(p.title)}</div>
+          <div class="pmeta">${catBadge(p.category)}${stBadge(p.status)}</div>
+          ${latestHtml}
+        </div>
+        <div class="pcount">${cnt} log${cnt!==1?"s":""}</div>
+      </div>`;
+    }).join("");
+
+  return `<div class="filters">
+    <select class="fsel" id="fcat">
+      <option value="all">All categories</option>
+      ${CATS.map(c=>`<option value="${c.id}"${filterCat===c.id?" selected":""}>${c.label}</option>`).join("")}
+    </select>
+    <select class="fsel" id="fst">
+      <option value="all">All statuses</option>
+      ${STATS.map(s=>`<option value="${s.id}"${filterStatus===s.id?" selected":""}>${s.label}</option>`).join("")}
+    </select>
+    <div class="filter-count">${filtered.length} project${filtered.length!==1?"s":""}</div>
+  </div>
+  <div class="project-list">${cards}</div>`;
+}
+
+function renderProject(){
+  const p=projects.find(x=>x.id===activeId);
+  if(!p)return`<button class="back-btn" id="back">← Back</button>`;
+  const cat=getCat(p.category);
+
+  const log=(p.correspondence||[]).length===0
+    ?`<div style="font-size:13px;color:var(--fg3);font-style:italic">No correspondence logged yet.</div>`
+    :(p.correspondence||[]).map(c=>{
+      const ui=entryUI[c.id]||{};
+      const hasFT=!!c.fullText;
+      const delConf=ui.confirmDelete?`<div class="confirm-del">
+        <span>Remove this entry?</span>
+        <button class="btn btn-danger btn-sm le-del-yes" data-cid="${c.id}">Yes, remove</button>
+        <button class="btn btn-ghost btn-sm le-del-no" data-cid="${c.id}">Cancel</button>
+      </div>`:"";
+      const summ=c.summary&&c.summary!==c.text?`<div class="le-summary">${esc(c.summary)}</div>`:"";
+      let ftSection="";
+      if(hasFT){
+        const expanded=ui.expanded?`<div class="le-ft"><pre>${esc(c.fullText)}</pre></div>`:"";
+        const answer=ui.answer?`<div class="le-answer">${esc(ui.answer)}</div>`:"";
+        ftSection=`<div style="margin-top:5px">
+          <button class="btn-icon le-toggle-ft" data-cid="${c.id}">${ui.expanded?"▲ Hide full text":"▼ View full text"}</button>
+          ${expanded}
+          <div class="le-qa" style="margin-top:8px">
+            <div class="le-qa-row">
+              <input class="le-q-input" data-cid="${c.id}" value="${esc(ui.question||"")}" placeholder="Ask a question about this document…" />
+              <button class="btn btn-primary btn-sm le-ask" data-cid="${c.id}" ${ui.asking||!ui.question?.trim()?"disabled":""}>${ui.asking?"…":"Ask"}</button>
+            </div>
+            ${answer}
+          </div>
+        </div>`;
+      }
+      return `<div class="log-entry" data-cid="${c.id}">
+        <div class="le-hdr">
+          <div class="le-date">${c.date}${c.fileNames?.length?`<span class="le-files">📄 ${c.fileNames.join(", ")}</span>`:""}</div>
+          <button class="btn-icon le-del-toggle" data-cid="${c.id}" style="color:var(--fg3);font-size:16px;padding:0 3px" title="Remove">×</button>
+        </div>
+        ${delConf}
+        <div class="le-text">${esc(c.text)}</div>
+        ${summ}
+        ${ftSection}
+      </div>`;
+    }).join("");
+
+  return `<button class="back-btn" id="back">← Back to projects</button>
+  <div class="pdetail">
+    <div class="dheader">
+      <input class="dtitle" id="dtitle" value="${esc(p.title)}" />
+      <div class="dactions">
+        <button class="btn-icon" id="exp-full">⎘ Full text</button>
+        <button class="btn-icon" id="exp-sum" ${exportLoading===p.id?"disabled":""}>⎘${exportLoading===p.id?" …":" Summary"}</button>
+        <button class="btn btn-danger btn-sm" id="del-proj">Delete</button>
+      </div>
+    </div>
+    <div class="dmeta">
+      <div class="dmfield">
+        <label class="flabel">Category</label>
+        <select class="dmsel" id="dcat">${catOptions(p.category)}</select>
+      </div>
+      <div class="dmfield">
+        <label class="flabel">Status</label>
+        <select class="dmsel" id="dst">${stOptions(p.status)}</select>
+      </div>
+    </div>
+    <div class="fgroup" style="margin-bottom:26px">
+      <label class="flabel">Notes</label>
+      <textarea id="dnotes" rows="4" placeholder="Add notes…">${esc(p.notes||"")}</textarea>
+    </div>
+    <div class="log-hdr">Correspondence log (${(p.correspondence||[]).length})</div>
+    ${log}
+  </div>`;
+}
+
+function renderAdd(){
+  return `<div class="add-pcard">
+    <h2 class="view-title">New project</h2>
+    <div class="fgroup">
+      <label class="flabel">Project title</label>
+      <input id="np-title" value="${esc(newProj.title)}" placeholder="e.g. Leak in Block B stairwell" />
+    </div>
+    <div class="frow">
+      <div class="fgroup">
+        <label class="flabel">Category</label>
+        <select id="np-cat">${catOptions(newProj.category)}</select>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Status</label>
+        <select id="np-st">${stOptions(newProj.status)}</select>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label class="flabel">Notes (optional)</label>
+      <textarea id="np-notes" rows="3" placeholder="Background, context…">${esc(newProj.notes)}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="np-save">Add project</button>
+      <button class="btn btn-ghost" id="np-cancel">Cancel</button>
+    </div>
+  </div>`;
+}
+
+function renderPaste(){
+  const fchips=uploadedFiles.map((f,i)=>`<div class="fchip">
+    <span>${f.mediaType==="application/pdf"?"📄":"🖼"}</span>
+    <span class="fchip-name">${esc(f.name)}</span>
+    <button class="fchip-rm" data-i="${i}">×</button>
+  </div>`).join("");
+
+  let aiHtml="";
+  if(aiResult){
+    const effAction=userOverride?.action||aiResult.action;
+    const effId=userOverride?.matchedProjectId||aiResult.matchedProjectId;
+    const matchedTitle=projects.find(p=>p.id===aiResult.matchedProjectId)?.title||"existing project";
+    const suggStr=aiResult.action==="match_existing"?`link to "${matchedTitle}"`:`create new project "${aiResult.suggestedTitle}"`;
+    const overrideSel=effAction==="match_existing"&&projects.length
+      ?`<select id="ai-match-sel">${projOptions(effId)}</select>`:"";
+    const createNote=effAction==="create_new"?`<div style="font-size:12px;color:var(--fg2)">Will create: <strong>"${esc(aiResult.suggestedTitle)}"</strong></div>`:"";
+    const catItem=effAction==="create_new"?`<div><div class="ai-grid-item-label">Category</div><div class="ai-grid-item-val">${getCat(aiResult.suggestedCategory).label}</div></div>`:"";
+    aiHtml=`<div class="ai-box">
+      <div class="ai-hdr">AI Analysis</div>
+      <div class="ai-summary">${esc(aiResult.summary)}</div>
+      ${aiResult._extractedText?`<div class="ai-note">✓ Full text extracted (${Math.round(aiResult._extractedText.length/1000)}k chars)</div>`:""}
+      <div class="ai-override">
+        <div class="ai-override-hint">AI suggested: <strong>${esc(suggStr)}</strong>. Override if needed:</div>
+        <div class="ai-override-btns">
+          <button class="btn btn-sm ${effAction==="create_new"?"btn-primary":"btn-ghost"}" id="ao-new">Create new project</button>
+          <button class="btn btn-sm ${effAction==="match_existing"?"btn-primary":"btn-ghost"}" id="ao-match">Link to existing project</button>
+        </div>
+        ${overrideSel}${createNote}
+      </div>
+      <div class="ai-grid">
+        <div>
+          <div class="ai-grid-item-label">Suggested status</div>
+          <div class="ai-grid-item-val">${getSt(aiResult.suggestedStatus).label}</div>
+          <div class="ai-grid-item-sub">${esc(aiResult.statusReason)}</div>
+        </div>
+        ${catItem}
+        <div>
+          <div class="ai-grid-item-label">Log entry</div>
+          <div style="font-style:italic;font-size:13px;color:var(--fg2)">${esc(aiResult.correspondenceEntry)}</div>
+        </div>
+      </div>
+      <div class="ai-actions">
+        <button class="btn btn-primary" id="ai-apply">Apply &amp; store</button>
+        <button class="btn btn-ghost" id="ai-discard">Discard &amp; re-analyse</button>
+      </div>
+    </div>`;
+  }
+
+  return `<h2 class="view-title">Add correspondence</h2>
+  <p class="add-corr-desc">Upload a PDF or image, paste text, or both. The full document text will be stored so you can query it later.</p>
+  <div class="drop-zone" id="drop-zone">
+    <div class="dz-icon">📎</div>
+    <div class="dz-label">Drop files here or click to upload</div>
+    <div class="dz-hint">PDF, JPG, PNG, WebP — full text extracted and stored</div>
+    <input type="file" id="file-input" accept=".pdf,image/jpeg,image/png,image/webp,image/gif" multiple style="display:none">
+  </div>
+  ${uploadedFiles.length?`<div class="fchips">${fchips}</div>`:""}
+  <div class="or-div"><span>or paste text</span></div>
+  <div class="fgroup">
+    <textarea id="paste-ta" rows="8" placeholder="Paste email or correspondence here…">${esc(pasteText)}</textarea>
+  </div>
+  ${!aiResult?`<div style="display:flex;gap:10px;align-items:center">
+    <button class="btn btn-primary" id="ai-analyse" ${aiLoading||(!pasteText.trim()&&!uploadedFiles.length)?"disabled":""}>${aiLoading?"Working…":"Analyse with AI"}</button>
+    <button class="btn btn-ghost" id="paste-cancel">Cancel</button>
+  </div>`:aiHtml}`;
+}
+
+// ── Event binding ─────────────────────────────────────────────────────────────
+function bindEvents(){
+  // Header buttons
+  document.getElementById("btn-add-corr").onclick=()=>{ view="paste";aiResult=null;pasteText="";uploadedFiles=[];render(); };
+  document.getElementById("btn-add-proj").onclick=()=>{ view="add";render(); };
+
+  if(view==="list"){
+    document.getElementById("fcat").onchange=e=>{ filterCat=e.target.value;render(); };
+    document.getElementById("fst").onchange=e=>{ filterStatus=e.target.value;render(); };
+    document.querySelectorAll(".pcard").forEach(el=>{
+      el.onclick=()=>{ activeId=el.dataset.pid;view="project";render(); };
+    });
+  }
+
+  if(view==="project"){
+    const p=projects.find(x=>x.id===activeId);
+    if(!p)return;
+    document.getElementById("back").onclick=()=>{ view="list";render(); };
+    document.getElementById("dtitle").oninput=e=>{ updateProj(p.id,{title:e.target.value}); };
+    document.getElementById("dcat").onchange=e=>{ updateProj(p.id,{category:e.target.value}); };
+    document.getElementById("dst").onchange=e=>{ updateProj(p.id,{status:e.target.value}); };
+    document.getElementById("dnotes").oninput=e=>{ updateProj(p.id,{notes:e.target.value}); };
+    document.getElementById("del-proj").onclick=()=>{ deleteProj(p.id); };
+    document.getElementById("exp-full").onclick=()=>{ showExport("Full project text — select all and copy",buildFullText(p)); };
+    document.getElementById("exp-sum").onclick=()=>{ doExportSummary(p.id); };
+
+    document.querySelectorAll(".le-del-toggle").forEach(btn=>{
+      btn.onclick=()=>{ const cid=btn.dataset.cid; entryUI[cid]={...entryUI[cid],confirmDelete:!entryUI[cid]?.confirmDelete}; render(); };
+    });
+    document.querySelectorAll(".le-del-yes").forEach(btn=>{
+      btn.onclick=()=>{
+        const cid=btn.dataset.cid;
+        updateProj(p.id,{correspondence:p.correspondence.filter(x=>x.id!==cid)});
+        delete entryUI[cid]; render();
+      };
+    });
+    document.querySelectorAll(".le-del-no").forEach(btn=>{
+      btn.onclick=()=>{ const cid=btn.dataset.cid; entryUI[cid]={...entryUI[cid],confirmDelete:false}; render(); };
+    });
+    document.querySelectorAll(".le-toggle-ft").forEach(btn=>{
+      btn.onclick=()=>{ const cid=btn.dataset.cid; entryUI[cid]={...entryUI[cid],expanded:!entryUI[cid]?.expanded}; render(); };
+    });
+    document.querySelectorAll(".le-q-input").forEach(inp=>{
+      inp.oninput=e=>{ const cid=inp.dataset.cid; entryUI[cid]={...entryUI[cid],question:e.target.value}; reBindAsk(cid); };
+      inp.onkeydown=e=>{ if(e.key==="Enter"){ const c=p.correspondence.find(x=>x.id===inp.dataset.cid); if(c)doAsk(c); } };
+    });
+    document.querySelectorAll(".le-ask").forEach(btn=>{
+      btn.onclick=()=>{ const c=p.correspondence.find(x=>x.id===btn.dataset.cid); if(c)doAsk(c); };
+    });
+  }
+
+  if(view==="add"){
+    document.getElementById("np-title").oninput=e=>{ newProj.title=e.target.value; };
+    document.getElementById("np-cat").onchange=e=>{ newProj.category=e.target.value; };
+    document.getElementById("np-st").onchange=e=>{ newProj.status=e.target.value; };
+    document.getElementById("np-notes").oninput=e=>{ newProj.notes=e.target.value; };
+    document.getElementById("np-save").onclick=()=>{
+      if(!newProj.title.trim())return;
+      projects.unshift({...newProj,id:genId(),createdAt:new Date().toISOString(),correspondence:[]});
+      newProj={title:"",category:"general",status:"waiting-nhg",notes:""};
+      save(); view="list"; notify("Project added"); render();
+    };
+    document.getElementById("np-cancel").onclick=()=>{ view="list";render(); };
+  }
+
+  if(view==="paste"){
+    const dz=document.getElementById("drop-zone");
+    const fi=document.getElementById("file-input");
+    dz.onclick=()=>fi.click();
+    dz.ondragover=e=>{ e.preventDefault(); dz.classList.add("drag-over"); };
+    dz.ondragleave=()=>dz.classList.remove("drag-over");
+    dz.ondrop=e=>{ e.preventDefault(); dz.classList.remove("drag-over"); handleFiles(e.dataTransfer.files); };
+    fi.onchange=e=>handleFiles(e.target.files);
+    document.querySelectorAll(".fchip-rm").forEach(btn=>{
+      btn.onclick=e=>{ e.stopPropagation(); uploadedFiles.splice(Number(btn.dataset.i),1); render(); };
+    });
+    const ta=document.getElementById("paste-ta");
+    if(ta) ta.oninput=e=>{ pasteText=e.target.value; const ab=document.getElementById("ai-analyse"); if(ab)ab.disabled=aiLoading||(!pasteText.trim()&&!uploadedFiles.length); };
+
+    if(!aiResult){
+      const ab=document.getElementById("ai-analyse");
+      if(ab) ab.onclick=()=>doAnalyse();
+      const pc=document.getElementById("paste-cancel");
+      if(pc) pc.onclick=()=>{ view="list";render(); };
+    } else {
+      const aon=document.getElementById("ao-new");
+      const aom=document.getElementById("ao-match");
+      if(aon) aon.onclick=()=>{ userOverride={action:"create_new"}; render(); };
+      if(aom) aom.onclick=()=>{ userOverride={action:"match_existing",matchedProjectId:aiResult.matchedProjectId||projects[0]?.id}; render(); };
+      const ms=document.getElementById("ai-match-sel");
+      if(ms) ms.onchange=e=>{ userOverride={action:"match_existing",matchedProjectId:e.target.value}; };
+      document.getElementById("ai-apply").onclick=()=>doApply();
+      document.getElementById("ai-discard").onclick=()=>{ aiResult=null;userOverride=null;render(); };
+    }
+  }
+}
+
+function reBindAsk(cid){
+  const btn=document.querySelector(`.le-ask[data-cid="${cid}"]`);
+  if(btn) btn.disabled=!entryUI[cid]?.question?.trim();
+}
+
+// ── Project mutations ─────────────────────────────────────────────────────────
+function updateProj(id,updates){
+  projects=projects.map(p=>p.id===id?{...p,...updates}:p);
+  save();
+}
+function deleteProj(id){
+  projects=projects.filter(p=>p.id!==id);
+  save(); view="list"; notify("Project deleted"); render();
+}
+
+// ── File handling ─────────────────────────────────────────────────────────────
+async function handleFiles(files){
+  const allowed=["application/pdf","image/jpeg","image/png","image/webp","image/gif"];
+  const valid=Array.from(files).filter(f=>allowed.includes(f.type));
+  if(!valid.length){ notify("Only PDF, JPG, PNG, WebP or GIF files are supported","error"); return; }
+  const processed=await Promise.all(valid.map(async f=>({name:f.name,base64:await fileToBase64(f),mediaType:f.type})));
+  uploadedFiles=[...uploadedFiles,...processed];
+  render();
+}
+
+// ── AI analyse ────────────────────────────────────────────────────────────────
+async function doAnalyse(){
+  const pt=document.getElementById("paste-ta")?.value||pasteText;
+  pasteText=pt;
+  if(!pt.trim()&&!uploadedFiles.length)return;
+  if(!apiKey){ showApiModal(); return; }
+  aiLoading=true; aiResult=null; render();
+
+  const buildContent=(instructions)=>{
+    const c=[];
+    for(const f of uploadedFiles){
+      if(f.mediaType==="application/pdf") c.push({type:"document",source:{type:"base64",media_type:"application/pdf",data:f.base64}});
+      else c.push({type:"image",source:{type:"base64",media_type:f.mediaType,data:f.base64}});
+    }
+    if(pt.trim()) c.push({type:"text",text:`Pasted text:\n${pt}`});
+    c.push({type:"text",text:instructions});
+    return c;
+  };
+
+  try{
+    let extractedText="";
+    if(uploadedFiles.length){
+      extractedText=await callClaude(
+        "You are a document text extractor. Extract all text content from the provided document(s) as plain text. Preserve structure. Output the raw text only — no commentary, no preamble.",
+        buildContent("Please extract all text from the document(s) above."),4000);
+    } else { extractedText=pt.trim(); }
+
+    const projList=projects.map(p=>`- ID: ${p.id} | Title: ${p.title} | Category: ${p.category} | Status: ${p.status}`).join("\n");
+    const raw=await callClaude(
+      `You are helping manage an estate correspondence tracker for Camberwell Fields, managed by NHG (Notting Hill Genesis).
+Existing projects:\n${projList||"(none yet)"}
+Return a JSON object ONLY (no markdown):
+{"summary":"2-3 sentence summary","action":"match_existing"|"create_new","matchedProjectId":"id or null","suggestedTitle":"short title","suggestedCategory":"service-charge"|"maintenance"|"ews1"|"general","suggestedStatus":"waiting-nhg"|"waiting-resident"|"resolved","statusReason":"one sentence","correspondenceEntry":"one sentence log entry with date, sender, subject"}
+Categories: service-charge (charges, reconciliations, budgets, ombudsman), maintenance (repairs, defects, lifts, leaks), ews1 (fire safety external wall), general (gardening, rubbish, communal).
+Status: waiting-nhg (NHG must act), waiting-resident (resident must act), resolved.`,
+      [{type:"text",text:`Correspondence:\n\n${extractedText}`}],1000);
+
+    const parsed=JSON.parse(raw.replace(/```json|```/g,"").trim());
+    parsed._extractedText=extractedText;
+    aiResult=parsed; userOverride=null;
+  } catch(e){
+    notify("AI analysis failed — "+(e.message||"please try again"),"error");
+  } finally {
+    aiLoading=false; render();
+  }
+}
+
+// ── Apply AI result ───────────────────────────────────────────────────────────
+function doApply(){
+  if(!aiResult)return;
+  const ms=document.getElementById("ai-match-sel");
+  const selId=ms?ms.value:(userOverride?.matchedProjectId||aiResult.matchedProjectId);
+  const effAction=userOverride?.action||aiResult.action;
+  const entry={id:genId(),date:new Date().toISOString().slice(0,10),text:aiResult.correspondenceEntry,summary:aiResult.summary,fullText:aiResult._extractedText||"",fileNames:uploadedFiles.map(f=>f.name)};
+  if(effAction==="match_existing"&&selId){
+    const proj=projects.find(p=>p.id===selId);
+    if(proj){
+      updateProj(proj.id,{status:aiResult.suggestedStatus,correspondence:[...(proj.correspondence||[]),entry]});
+      notify(`Updated "${proj.title}"`);
+    }
+  } else {
+    const p={id:genId(),title:aiResult.suggestedTitle,category:aiResult.suggestedCategory,status:aiResult.suggestedStatus,notes:aiResult.summary,createdAt:new Date().toISOString(),correspondence:[entry]};
+    projects.unshift(p); save(); notify(`New project: "${p.title}"`);
+  }
+  pasteText=""; uploadedFiles=[]; aiResult=null; userOverride=null;
+  view="list"; render();
+}
+
+// ── Ask question ──────────────────────────────────────────────────────────────
+async function doAsk(entry){
+  const q=entryUI[entry.id]?.question?.trim();
+  if(!q)return;
+  if(!apiKey){ showApiModal(); return; }
+  entryUI[entry.id]={...entryUI[entry.id],asking:true,answer:null};
+  render();
+  try{
+    const ans=await callClaude(
+      "You are a helpful assistant for Camberwell Fields residents. Answer questions about the correspondence concisely and accurately based only on the text provided. If the answer is not in the text, say so.",
+      [{type:"text",text:`Document:\n\n${entry.fullText||entry.summary}\n\n---\nQuestion: ${q}`}],600);
+    entryUI[entry.id]={...entryUI[entry.id],asking:false,answer:ans};
+  } catch {
+    entryUI[entry.id]={...entryUI[entry.id],asking:false,answer:"Sorry, something went wrong."};
+  }
+  render();
+}
+
+// ── Export summary ────────────────────────────────────────────────────────────
+async function doExportSummary(pid){
+  const project=projects.find(x=>x.id===pid);
+  if(!project)return;
+  if(!apiKey){ showApiModal(); return; }
+  exportLoading=pid; render();
+  try{
+    const cat=getCat(project.category),st=getSt(project.status);
+    const cl=(project.correspondence||[]).map((c,i)=>`[${i+1}] ${c.date}: ${c.summary||c.text}`).join("\n");
+    const summary=await callClaude(
+      "You are a concise assistant for Camberwell Fields residents. Write a project summary of no more than 3-4 sentences. First 1-2 sentences: what the issue is. Final 1-2 sentences: current status and what is next (what NHG is due to do or what residents are waiting on, with any specific deadlines). No bullets. No headers. Plain prose only.",
+      [{type:"text",text:`Project: ${project.title}\nCategory: ${cat.label}\nStatus: ${st.label}\nNotes: ${project.notes||"none"}\n\nCorrespondence:\n${cl||"None."}`}],500);
+    const L=[];
+    L.push("CAMBERWELL FIELDS — PROJECT SUMMARY");
+    L.push("=".repeat(50));
+    L.push(`Title:    ${project.title}`);
+    L.push(`Category: ${cat.label}`);
+    L.push(`Status:   ${st.label}`);
+    L.push(`Exported: ${new Date().toISOString().slice(0,10)}`);
+    L.push(""); L.push(summary);
+    showExport("Project summary — select all and copy",L.join("\n"));
+  } catch { notify("Summary failed — please try again","error"); }
+  finally { exportLoading=null; render(); }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+load();
+render();
+</script>
